@@ -1,4 +1,4 @@
-# coding=
+# coding= utf8
 import tensorflow as tf;
 
 """移动滑动模型
