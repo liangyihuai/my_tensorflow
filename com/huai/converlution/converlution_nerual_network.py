@@ -20,6 +20,16 @@ CONV2_SIZE = 5;
 
 FC_SIZE = 512;
 
+BATCH_SIZE = 100;
+LEARNING_RATE_BASE = 0.1;
+LEARNING_RATE_DECAY = 0.99;
+REGULARIZATION_RATE = 0.0001;
+TRAINING_STEPS = 6000;
+MOVING_AVERAGE_DECAY = 0.99;
+
+MODEL_SAVE_PATH = 'C:\\Users\\USER\\Desktop\\model_saving_path';
+MODEL_NAME = "mnist_model"
+
 def inference(input_tensor, train, regularizer):
     with tf.variable_scope("layer1_conv1"):
         conv1_weights = tf.get_variable(
@@ -66,16 +76,6 @@ def inference(input_tensor, train, regularizer):
     return logit;
 
 
-BATCH_SIZE = 100;
-LEARNING_RATE_BASE = 0.1;
-LEARNING_RATE_DECAY = 0.99;
-REGULARIZATION_RATE = 0.0001;
-TRAINING_STEPS = 6000;
-MOVING_AVERAGE_DECAY = 0.99;
-
-MODEL_SAVE_PATH = 'C:\\Users\\USER\\Desktop\\model_saving_path';
-MODEL_NAME = "mnist_model"
-
 def train(mnist):
     x = tf.placeholder(tf.float32, [BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, NUM_CHANNELS],name='x-input');
     y_ = tf.placeholder(tf.float32, [None, OUTPUT_NODE], name='y-input');
@@ -95,7 +95,6 @@ def train(mnist):
                                                mnist.train.num_examples/BATCH_SIZE,
                                                LEARNING_RATE_DECAY,
                                                staircase=True)
-
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss, global_step=global_step);
     with tf.control_dependencies([train_step, variable_averages_op]):
         train_op = tf.no_op(name='train');
@@ -112,7 +111,6 @@ def train(mnist):
             if i % 1000 == 0:
                 print("after %d training step(s), loss on training batch is %g."%(step, loss_value));
                 saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=global_step);
-
 
 
 def main():

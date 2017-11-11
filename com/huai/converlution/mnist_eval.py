@@ -12,8 +12,10 @@ EVAL_INTERVAL_SECS = 10
 
 def evaluate(mnist):
     with tf.Graph().as_default() as g:
-        # x = tf.placeholder(tf.float32, [None, converlution_nerual_network.INPUT_NODE], name='x-input')
-        x = tf.placeholder(tf.float32, [None, converlution_nerual_network.INPUT_NODE], name='x-input')
+        x = tf.placeholder(tf.float32, [None,
+                                        converlution_nerual_network.IMAGE_SIZE,
+                                        converlution_nerual_network.IMAGE_SIZE,
+                                        converlution_nerual_network.NUM_CHANNELS], name='x-input')
         y_ = tf.placeholder(tf.float32, [None, converlution_nerual_network.OUTPUT_NODE], name='y-input')
 
         reshaped_x= np.reshape(mnist.validation.images,
