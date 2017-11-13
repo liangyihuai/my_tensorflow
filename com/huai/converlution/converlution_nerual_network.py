@@ -27,7 +27,7 @@ REGULARIZATION_RATE = 0.0001;
 TRAINING_STEPS = 6000;
 MOVING_AVERAGE_DECAY = 0.99;
 
-MODEL_SAVE_PATH = 'C:\\Users\\USER\\Desktop\\model_saving_path';
+MODEL_SAVE_PATH = 'C:\\Users\\liangyh\\Desktop\\temp\\final';
 MODEL_NAME = "mnist_model"
 
 def inference(input_tensor, train, regularizer):
@@ -40,7 +40,7 @@ def inference(input_tensor, train, regularizer):
         conv1 = tf.nn.conv2d(input_tensor, conv1_weights, strides=[1, 1, 1, 1], padding="SAME");
         relu1 = tf.nn.relu(tf.nn.bias_add(conv1, conv1_biases));
 
-    with tf.name_scope("layer2_pool1"):
+    with tf.variable_scope("layer2_pool1"):
         pool1 = tf.nn.max_pool(relu1, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME");
 
     with tf.variable_scope("layer3_conv2"):
@@ -50,11 +50,11 @@ def inference(input_tensor, train, regularizer):
         conv2 = tf.nn.conv2d(pool1, conv2_weights, strides=[1, 1, 1, 1], padding='SAME');
         relu2 = tf.nn.relu(tf.nn.bias_add(conv2, conv2_biases));
 
-    with tf.name_scope("layer4_pool2"):
+    with tf.variable_scope("layer4_pool2"):
         pool2 = tf.nn.max_pool(relu2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding="SAME");
         pool_shape = pool2.get_shape().as_list();
-        nodes = pool_shape[1]*pool_shape[2] * pool_shape[3];
-        reshaped = tf.reshape(pool2, [pool_shape[0], nodes]);
+        nodes = pool_shape[1] * pool_shape[2] * pool_shape[3];
+        reshaped = tf.reshape(pool2, [-1, nodes]);
 
     with tf.variable_scope('layer5-fc1'):
         fc1_weights = tf.get_variable('weight', [nodes, FC_SIZE],
@@ -108,7 +108,7 @@ def train(mnist):
             reshaped_xs = np.reshape(xs, (BATCH_SIZE, IMAGE_SIZE, IMAGE_SIZE, NUM_CHANNELS));
             _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict={x:reshaped_xs, y_:ys})
 
-            if i % 1000 == 0:
+            if i % 100 == 0:
                 print("after %d training step(s), loss on training batch is %g."%(step, loss_value));
                 saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=global_step);
 
