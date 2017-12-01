@@ -68,7 +68,7 @@ def train(mnist):
     # 损失函数的计算
     regularizer = tf.contrib.layers.l2_regularizer(REGULARAZTION_RATE)
     with tf.variable_scope("", reuse=True):
-        regularaztion = regularizer(tf.get_variable("layer1/weights")) + \
+        regularaztion = regularizer(tf.get_variable("layer1/weights")) +\
                         regularizer(tf.get_variable("layer2/weights"))
 
     loss = cross_entropy_mean + regularaztion
