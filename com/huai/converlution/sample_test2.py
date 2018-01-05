@@ -9,8 +9,7 @@ input = input.reshape([1, 3, 3, 1]);
 
 print("input shape: ", input.shape);
 weights = tf.get_variable('weights', shape=[2, 2, 1, 1],
-                         initializer=tf.constant_initializer([[1, -1],
-                                                        [0, 2]]))
+                         initializer=tf.constant_initializer([[1, -1], [0, 2]]))
 biases = tf.get_variable('biases', shape=[1], dtype='float32', initializer=tf.constant_initializer(1));
 
 x = tf.placeholder(dtype='float32', shape=[1, None, None, 1]);

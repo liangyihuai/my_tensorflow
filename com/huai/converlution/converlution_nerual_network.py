@@ -69,7 +69,8 @@ def inference(input_tensor, train, regularizer):
     with tf.variable_scope('layer6-fc2'):
         fc2_weights = tf.get_variable('weight', [FC_SIZE, NUM_LABELS],
                                       initializer=tf.truncated_normal_initializer(stddev=0.1));
-        if regularizer != None: tf.add_to_collection('losses', regularizer(fc2_weights));
+        if regularizer != None:
+            tf.add_to_collection('losses', regularizer(fc2_weights));
         fc2_biases = tf.get_variable('bias', [NUM_LABELS], initializer=tf.constant_initializer(0.1))
         logit = tf.matmul(fc1, fc2_weights)+fc2_biases;
 
