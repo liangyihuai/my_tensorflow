@@ -7,7 +7,7 @@ import sklearn.datasets
 import sklearn.linear_model
 import matplotlib
 
-learning_rate = 0.06
+learning_rate = 0.02
 
 input_node_num = 2;
 hidden_node_num = 8;
@@ -231,14 +231,14 @@ def backward_propagate(X, Y, parameters, cache, lambd):
     # dW1 = np.dot(dZ1, X.T)/m + lambd / m * W1
     # db1 = np.sum(dZ1, axis=1, keepdims=True)/m
 
-    W1 -= dW1
-    b1 -= db1
-    W2 -= dW2
-    b2 -= db2
-    varphi1 -= dVarphi1
-    bata1 -= dBata1
-    varphi2 -= dVarphi2
-    bata2 -= dBata2
+    W1 -= learning_rate * dW1
+    b1 -= learning_rate * db1
+    W2 -= learning_rate * dW2
+    b2 -= learning_rate * db2
+    varphi1 -= learning_rate * dVarphi1
+    bata1 -= learning_rate * dBata1
+    varphi2 -= learning_rate * dVarphi2
+    bata2 -= learning_rate * dBata2
 
     return {'W1': W1, 'b1': b1, 'W2': W2, 'b2': b2,
             'varphi1':varphi1,
@@ -288,6 +288,10 @@ def build_model():
     # plt.scatter(X_original[:, 0], X_original[:, 1], c=Y_original, s=20, cmap=plt.cm.Spectral)
     plt.title("model")
     plt.show()
+
+
+def check_gradient():
+    pass
 
 
 def plot_decision_boundary(X, y, pred_func):
