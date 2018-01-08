@@ -26,8 +26,8 @@ def get_case_data(example_num = 200):
     :return:
     """
     np.random.seed(6)
-    # X, y = sklearn.datasets.make_moons(example_num, noise=0.30)
-    X, y = sklearn.datasets.make_circles(200, noise=0.08)
+    X, y = sklearn.datasets.make_moons(example_num, noise=0.30)
+    # X, y = sklearn.datasets.make_circles(200, noise=0.08)
     # X, y = sklearn.datasets.make_blobs(200, centers=2)
     return X, y;
 
@@ -44,7 +44,7 @@ def process_data(X, Y):
     return X.T, Y;
 
 
-def random_mini_batches(X, Y, batch_size=128):
+def random_mini_batches(X, Y, batch_size=200):
     """
     :param X:
     :param Y:
@@ -202,18 +202,22 @@ def gradient_check(x, y, parameters, epsilon=1e-7):
     gradapprox = np.zeros((num_parameters, 1))
 
     index = 0
-    for key, value in parameters.items():
-        parameters[key] = value + epsilon
-        A2 = forward_propagate(x, parameters)['A2']
-        cost_plus = cost_compute(A2, y, parameters)
+    for key, values in parameters.items():
+        for row in range(values.shape[0]):
+            for col in range(values.shape[1]):
+                orig_value = values[row][col]
 
-        parameters[key] = value - 2 * epsilon
-        A2 = forward_propagate(x, parameters)['A2']
-        cost_minus = cost_compute(A2, y, parameters)
+                parameters[key][row][col] = orig_value + epsilon
+                A2 = forward_propagate(x, parameters)['A2']
+                cost_plus = cost_compute(A2, y, parameters)
 
-        gradapprox[index] = (cost_plus - cost_minus) / (2 * epsilon)
+                parameters[key][row][col] = orig_value - epsilon
+                A2 = forward_propagate(x, parameters)['A2']
+                cost_minus = cost_compute(A2, y, parameters)
 
-        index += 1
+                gradapprox[index] = (cost_plus - cost_minus) / (2 * epsilon)
+
+                index += 1
 
 
     cache = forward_propagate(x, parameters=parameters)
@@ -298,8 +302,9 @@ def plot_decision_boundary(X, y, pred_func):
 def dictionary_to_vector(parameters):
     vector = []
     for key, values in parameters.items():
-        for v in values:
-            vector.extend(v)
+        for row in range(values.shape[0]):
+            for col in range(values.shape[1]):
+                vector.append(values[row][col])
 
     return np.array(vector).reshape((-1, 1))
 

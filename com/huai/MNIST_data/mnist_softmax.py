@@ -4,7 +4,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 INPUT_NODE_NUMBER = 784
 OUTPUT_NODE_NUMBER = 10
 
-LEARNING_RATE = 0.2
+LEARNING_RATE = 0.05
 EPOCHES_NUMBER = 1000
 
 x = tf.placeholder(shape=(None, 784), dtype=tf.float32, name='x')
@@ -20,11 +20,11 @@ z2 = tf.matmul(a1, w2) + b2
 
 cross_entropy_cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=z2))
 
-train_op = tf.train.GradientDescentOptimizer(LEARNING_RATE).minimize(cross_entropy_cost)
+train_op = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cross_entropy_cost)
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    mnist = input_data.read_data_sets('dir_with_mnist_data_files', one_hot=True)
+    mnist = input_data.read_data_sets('F:/PycharmProject/TensorFlowTest/com/huai/converlution/MNIST-data', one_hot=True)
 
     for i in range(EPOCHES_NUMBER):
         batch_xs, batch_ys = mnist.train.next_batch(batch_size=100)
