@@ -1,5 +1,6 @@
-from com.huai.converlution.resnets.resnets_utils import load_dataset
-from com.huai.converlution.resnets.resnets_utils import process_orig_datasets
+from com.huai.converlution.resnets.resnets_utils import *
+import numpy as np
+
 
 path = 'D:/LiangYiHuai/deepleanring/resnets/datasets'
 orig_data = load_dataset(path)
@@ -12,4 +13,14 @@ print ("X_train shape: " + str(X_train.shape))
 print ("Y_train shape: " + str(Y_train.shape))
 print ("X_test shape: " + str(X_test.shape))
 print ("Y_test shape: " + str(Y_test.shape))
+
+mini_batch = random_mini_batches(X_train, Y_train)
+print(mini_batch[0][0].shape)
+
+
+for i in range(10):
+    # print(int(np.random.rand() * 10))
+    print(np.random.randint(0, 10))
+
+
 

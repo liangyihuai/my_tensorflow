@@ -29,8 +29,7 @@ labels = tf.placeholder(name='label', dtype=tf.float32, shape=(None, 10))
 logits = reference(features, tf.estimator.ModeKeys.TRAIN)
 cross_entropy_loss = tf.losses.softmax_cross_entropy(onehot_labels=labels, logits=logits)
 train_op = tf.train.AdamOptimizer(0.002).minimize(cross_entropy_loss)
-accuracy_op = tf.reduce_mean(
-                tf.cast(tf.equal(tf.argmax(logits, axis=1), tf.argmax(labels, axis=1)), tf.float32))
+accuracy_op = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(logits, axis=1), tf.argmax(labels, axis=1)), tf.float32))
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())

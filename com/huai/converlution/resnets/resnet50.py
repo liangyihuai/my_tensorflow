@@ -1,9 +1,6 @@
 import tensorflow as tf
-from com.huai.converlution.resnets.resnets_utils import load_dataset
-from com.huai.converlution.resnets.resnets_utils import process_orig_datasets
+from com.huai.converlution.resnets.resnets_utils import *
 import numpy as np
-
-
 
 
 def identity_block(X, kernel_size, filters, stage, block):
@@ -30,28 +27,28 @@ def identity_block(X, kernel_size, filters, stage, block):
         X_shortcut = X
 
         # First component of main path
-        X = tf.layers.conv2d(X, filter1, kernel_size=(1, 1), strides=(1, 1),name=conv_name_base+'2a',
-                         kernel_initializer=tf.glorot_uniform_initializer(seed=0))
-        X = tf.layers.batch_normalization(X, axis=3, name=bn_name_base+'2a')
-        X = tf.nn.relu(X)
+        conv1 = tf.layers.conv2d(X, filter1, kernel_size=(1, 1), strides=(1, 1),name=conv_name_base+'2a',
+                         kernel_initializer=tf.glorot_uniform_initializer())
+        batch_norm1 = tf.layers.batch_normalization(conv1, axis=3, name=bn_name_base+'2a')
+        activate1 = tf.nn.relu(batch_norm1)
 
         # Second component of main path
-        X = tf.layers.conv2d(X, filter2, (kernel_size, kernel_size), padding='same',
+        conv2 = tf.layers.conv2d(activate1, filter2, (kernel_size, kernel_size), padding='same',
                              name=conv_name_base+'2b',
-                             kernel_initializer=tf.glorot_uniform_initializer(seed=0))
-        X = tf.layers.batch_normalization(X, axis=3, name=bn_name_base+'2b')
-        X = tf.nn.relu(X)
+                             kernel_initializer=tf.glorot_uniform_initializer())
+        batch_norm2 = tf.layers.batch_normalization(conv2, axis=3, name=bn_name_base+'2b')
+        activate2 = tf.nn.relu(batch_norm2)
 
         # Third component of main path
-        X = tf.layers.conv2d(X, filter3, kernel_size=(1, 1),
-                             name=conv_name_base+'2c', kernel_initializer=tf.glorot_uniform_initializer(seed=0))
-        X = tf.layers.batch_normalization(X, axis=3, name=bn_name_base + '2c')
+        conv3 = tf.layers.conv2d(activate2, filter3, kernel_size=(1, 1),
+                             name=conv_name_base+'2c', kernel_initializer=tf.glorot_uniform_initializer())
+        batch_norm3 = tf.layers.batch_normalization(conv3, axis=3, name=bn_name_base + '2c')
 
         # Final step: Add shortcut value to main path, and pass it through a RELU activation
-        X = tf.add(X, X_shortcut)
-        X = tf.nn.relu(X)
+        X_add_shortcut = tf.add(batch_norm3, X_shortcut)
+        add_result = tf.nn.relu(X_add_shortcut)
 
-    return X
+    return add_result
 
 
 def convolutional_block(X, kernel_size, filters, stage, block, stride = 2):
@@ -83,32 +80,32 @@ def convolutional_block(X, kernel_size, filters, stage, block, stride = 2):
         X_shortcut = X
 
         # First component of main path
-        X = tf.layers.conv2d(X, filter1, kernel_size=(1, 1), strides=(stride, stride), name=conv_name_base+'2a',
-                             kernel_initializer=tf.glorot_uniform_initializer(seed=(0)))
-        X = tf.layers.batch_normalization(X, axis=3, name=bn_name_base+'2a')
-        X = tf.nn.relu(X)
+        conv1 = tf.layers.conv2d(X, filter1, kernel_size=(1, 1), strides=(stride, stride), name=conv_name_base+'2a',
+                             kernel_initializer=tf.glorot_uniform_initializer())
+        batch_norm1 = tf.layers.batch_normalization(conv1, axis=3, name=bn_name_base+'2a')
+        activate1 = tf.nn.relu(batch_norm1)
 
         # Second component of main path
-        X = tf.layers.conv2d(X, filter2, (kernel_size, kernel_size), name=conv_name_base + '2b',
-                             padding='same', kernel_initializer=tf.glorot_uniform_initializer(seed=0))
-        X = tf.layers.batch_normalization(X, axis=3, name=bn_name_base + '2b')
-        X = tf.nn.relu(X)
+        conv2 = tf.layers.conv2d(activate1, filter2, (kernel_size, kernel_size), name=conv_name_base + '2b',
+                             padding='same', kernel_initializer=tf.glorot_uniform_initializer())
+        batch_norm2 = tf.layers.batch_normalization(conv2, axis=3, name=bn_name_base + '2b')
+        activate2 = tf.nn.relu(batch_norm2)
 
         # Third component of main path
-        X = tf.layers.conv2d(X, filter3, (1, 1),
-                             name=conv_name_base + '2c', kernel_initializer=tf.glorot_uniform_initializer(seed=0))
-        X = tf.layers.batch_normalization(X, axis=3, name=bn_name_base + '2c')
+        conv3 = tf.layers.conv2d(activate2, filter3, (1, 1),
+                             name=conv_name_base + '2c', kernel_initializer=tf.glorot_uniform_initializer())
+        batch_norm3 = tf.layers.batch_normalization(conv3, axis=3, name=bn_name_base + '2c')
 
         # SHORTCUT PATH
         X_shortcut = tf.layers.conv2d(X_shortcut, filter3, (1,1), strides=(stride, stride), name=conv_name_base + '1',
-                                      kernel_initializer=tf.glorot_uniform_initializer(seed=0))
+                                      kernel_initializer=tf.glorot_uniform_initializer())
         X_shortcut = tf.layers.batch_normalization(X_shortcut, axis=3, name=bn_name_base + '1')
 
         # Final step: Add shortcut value to main path, and pass it through a RELU activation
-        X = tf.add(X_shortcut, X)
-        X = tf.nn.relu(X)
+        X_add_shortcut = tf.add(X_shortcut, batch_norm3)
+        add_result = tf.nn.relu(X_add_shortcut)
 
-    return X
+    return add_result
 
 
 def ResNet50(X_train, Y_train, X_test, Y_test, classes= 6):
@@ -122,55 +119,80 @@ def ResNet50(X_train, Y_train, X_test, Y_test, classes= 6):
     Returns:
     """
     m, H_size, W_size, C_size = X_train.shape
+    assert((H_size, W_size, C_size) == (64, 64, 3))
+
     X = tf.placeholder(tf.float32, shape=(None, H_size, W_size, C_size), name='X')
     Y = tf.placeholder(tf.float32, shape=(None, classes), name='Y')
 
-    X = tf.pad(X, tf.constant([[0, 0],[3, 3,], [3, 3], [0, 0]]), "CONSTANT")
+    X_padding = tf.pad(X, tf.constant([[0, 0],[3, 3,], [3, 3], [0, 0]]), "CONSTANT")
+
+    assert(X_padding.shape == (X_padding.shape[0], 70, 70, 3))
 
     # stage 1
-    X = tf.layers.conv2d(X, filters=64, kernel_size=(7, 7), strides=(2, 2), name='conv1', kernel_initializer=tf.glorot_uniform_initializer(seed=0))
-    X = tf.layers.batch_normalization(X, axis=3, name='bn_conv1')
-    X = tf.nn.relu(X)
-    X = tf.layers.max_pooling2d(X, pool_size=(3, 3), strides=(2, 2))
+    conv_stage1 = tf.layers.conv2d(X_padding, filters=64, kernel_size=(7, 7), strides=(2, 2), name='conv1',
+                                   kernel_initializer=tf.glorot_uniform_initializer())
+    batch_norm1_stage1 = tf.layers.batch_normalization(conv_stage1, axis=3, name='bn_conv1')
+    activate_stage1 = tf.nn.relu(batch_norm1_stage1)
+    pool_stage1 = tf.layers.max_pooling2d(activate_stage1, pool_size=(3, 3), strides=(2, 2))
+    assert(pool_stage1.shape == (pool_stage1.shape[0], 15, 15, 64))
 
     # stage 2
-    X = convolutional_block(X, kernel_size=3, filters=[64, 64, 256], stage=2, block='a', stride=1)
-    X = identity_block(X, 3, [4, 64, 256], stage=2, block='b')
-    X = identity_block(X, 3, [4, 64, 256], stage=2, block='c')
+    conv_block_stage2 = convolutional_block(pool_stage1, kernel_size=3, filters=[64, 64, 256], stage=2, block='a', stride=1)
+    ide_block_stage2_1 = identity_block(conv_block_stage2, 3, [4, 64, 256], stage=2, block='b')
+    ide_block_stage2_2 = identity_block(ide_block_stage2_1, 3, [4, 64, 256], stage=2, block='c')
 
     # stage 3
-    X = convolutional_block(X, kernel_size=3, filters=[128,128,512], stage=3, block='a', stride=2)
-    X = identity_block(X, 3, [128,128,512], stage=3, block='b')
-    X = identity_block(X, 3, [128,128,512], stage=3, block='c')
-    X = identity_block(X, 3, [128,128,512], stage=3, block='d')
+    conv_block_stage3 = convolutional_block(ide_block_stage2_2, kernel_size=3, filters=[128,128,512], stage=3, block='a', stride=2)
+    iden_block_stage3_1 = identity_block(conv_block_stage3, 3, [128,128,512], stage=3, block='b')
+    iden_block_stage3_2 = identity_block(iden_block_stage3_1, 3, [128,128,512], stage=3, block='c')
+    iden_block_stage3_3 = identity_block(iden_block_stage3_2, 3, [128,128,512], stage=3, block='d')
 
     # stage 4
-    X = convolutional_block(X, kernel_size=3, filters=[256, 256, 1024], stage=4, block='a', stride=2)
-    X = identity_block(X, 3, [256, 256, 1024], stage=4, block='b')
-    X = identity_block(X, 3, [256, 256, 1024], stage=4, block='c')
-    X = identity_block(X, 3, [256, 256, 1024], stage=4, block='d')
-    X = identity_block(X, 3, [256, 256, 1024], stage=4, block='e')
-    X = identity_block(X, 3, [256, 256, 1024], stage=4, block='f')
+    conv_block_stage4 = convolutional_block(iden_block_stage3_3, kernel_size=3, filters=[256, 256, 1024], stage=4, block='a', stride=2)
+    ide_block_stage4_1 = identity_block(conv_block_stage4, 3, [256, 256, 1024], stage=4, block='b')
+    ide_block_stage4_2 = identity_block(ide_block_stage4_1, 3, [256, 256, 1024], stage=4, block='c')
+    ide_block_stage4_3 = identity_block(ide_block_stage4_2, 3, [256, 256, 1024], stage=4, block='d')
+    ide_block_stage4_4 = identity_block(ide_block_stage4_3, 3, [256, 256, 1024], stage=4, block='e')
+    ide_block_stage4_5 = identity_block(ide_block_stage4_4, 3, [256, 256, 1024], stage=4, block='f')
 
     # stage 5
-    X = convolutional_block(X, kernel_size=3, filters=[512, 512, 2048], stage=5, block='a', stride=2)
-    X = identity_block(X, 3, [512, 512, 2048], stage=5, block='b')
-    X = identity_block(X, 3, [512, 512, 2048], stage=5, block='c')
+    conv_block_stage5 = convolutional_block(ide_block_stage4_5, kernel_size=3, filters=[512, 512, 2048], stage=5, block='a', stride=2)
+    ide_block_stage5_1 = identity_block(conv_block_stage5, 3, [512, 512, 2048], stage=5, block='b')
+    ide_block_stage5_2 = identity_block(ide_block_stage5_1, 3, [512, 512, 2048], stage=5, block='c')
 
-    X = tf.layers.average_pooling2d(X, pool_size=(2, 2), strides=(1,1))
+    ave_pool1 = tf.layers.average_pooling2d(ide_block_stage5_2, pool_size=(2, 2), strides=(1,1))
 
-    X = tf.layers.flatten(X, name='flatten')
-    X = tf.layers.dense(X, classes, activation=tf.nn.softmax, name='fc' + str(classes), kernel_initializer=tf.glorot_uniform_initializer(seed=0))
+    flatten = tf.layers.flatten(ave_pool1, name='flatten')
+    logits = tf.layers.dense(flatten, classes, activation=tf.nn.softmax, name='fc' + str(classes),
+                             kernel_initializer=tf.glorot_uniform_initializer())
 
-    cost = tf.reduce_mean(tf.losses.softmax_cross_entropy(onehot_labels=Y, logits=X))
-    train_op = tf.train.AdamOptimizer(0.01).minimize(cost)
+    loss = tf.losses.softmax_cross_entropy(onehot_labels=Y, logits=logits)
+
+    optimizer = tf.train.AdamOptimizer(0.005)
+
+    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(update_ops):
+        train_op = optimizer.minimize(loss)
+
+
+    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(logits, axis=1), tf.argmax(Y, axis=1)), tf.float32))
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
 
+        assert(X_train.shape == (X_train.shape[0], 64, 64, 3))
+        assert(Y_train.shape[1] == 6)
+        mini_batches = random_mini_batches(X_train, Y_train)
         for i in range(10):
-            _, cost_sess = sess.run([train_op, cost], feed_dict={X:X_train, Y:Y_train})
+            X_mini_batch, Y_mini_batch = mini_batches[np.random.randint(0, len(mini_batches))]
+            _, cost_sess = sess.run([train_op, loss], feed_dict={X:X_mini_batch, Y:Y_mini_batch})
             print(cost_sess)
+
+        training_acur = sess.run(accuracy, feed_dict={X:X_train, Y:Y_train})
+        testing_acur = sess.run(accuracy, feed_dict={X:X_test, Y:Y_test})
+        print("traing acurracy: ", training_acur)
+        print("testing acurracy: ", testing_acur)
+
 
 
 path = 'D:/LiangYiHuai/deepleanring/resnets/datasets'
