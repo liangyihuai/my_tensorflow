@@ -1,6 +1,8 @@
 from com.huai.converlution.resnets.resnets_utils import *
 import numpy as np
-
+import tensorflow as tf
+from tensorflow.examples.tutorials.mnist import input_data
+import matplotlib.pyplot as plt
 
 path = 'D:/LiangYiHuai/deepleanring/resnets/datasets'
 orig_data = load_dataset(path)
@@ -14,13 +16,14 @@ print ("Y_train shape: " + str(Y_train.shape))
 print ("X_test shape: " + str(X_test.shape))
 print ("Y_test shape: " + str(Y_test.shape))
 
+print('x train max, ', np.max(X_train), '; x train min, ', np.min(X_train))
+print('x test max, ', np.max(X_test), '; x test min, ', np.min(X_test))
+
 mini_batch = random_mini_batches(X_train, Y_train)
 print(mini_batch[0][0].shape)
 
+mini_batches = random_mini_batches(X_train, Y_train, mini_batch_size=16)
 
-for i in range(10):
-    # print(int(np.random.rand() * 10))
-    print(np.random.randint(0, 10))
-
+X_mini_batch, Y_mini_batch = mini_batches[np.random.randint(0, len(mini_batches))]
 
 

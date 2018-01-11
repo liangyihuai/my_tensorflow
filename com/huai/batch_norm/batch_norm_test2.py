@@ -5,16 +5,8 @@ import matplotlib.pyplot as plt
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
-def dense(x, size, scope):
-    return tf.contrib.layers.fully_connected(x, size, activation_fn=None,scope=scope)
 
-def dense_relu(x, size, scope):
-    with tf.variable_scope(scope):
-        h1 = dense(x, size, 'dense')
-        return tf.nn.relu(h1, 'relu')
-
-
-def train(logits, y, phase):
+def train(logits, y):
     with tf.name_scope('accuracy'):
         accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(y, 1), tf.argmax(logits, 1)), 'float32'))
 
@@ -28,7 +20,7 @@ def train(logits, y, phase):
     sess.run(tf.global_variables_initializer())
 
     history = []
-    iterep = 500
+    iterep = 200
     for i in range(iterep * 30):
         x_train, y_train = mnist.train.next_batch(100)
         sess.run(train_step, feed_dict={'x:0': x_train, 'y:0': y_train, 'phase:0': 1})
@@ -43,6 +35,14 @@ def train(logits, y, phase):
     return history
 
 
+def dense(x, size, scope):
+    return tf.contrib.layers.fully_connected(x, size, activation_fn=None,scope=scope)
+
+def dense_relu(x, size, scope):
+    with tf.variable_scope(scope):
+        h1 = dense(x, size, 'dense')
+        return tf.nn.relu(h1, 'relu')
+
 
 def normal_model():
     tf.reset_default_graph()
@@ -54,19 +54,17 @@ def normal_model():
     h2 = dense_relu(h1, 100, 'layer2')
     logits = dense(h2, 10, scope='logits')
 
-    # show_graph(tf.get_default_graph().as_graph_def())
-
-    history = train(logits, y, phase)
+    history = train(logits, y)
     return history
 
 
 def dense_batch_relu(x, phase, scope):
     with tf.variable_scope(scope):
         h1 = tf.contrib.layers.fully_connected(x, 100, activation_fn=None, scope='dense')
-        h2 = tf.contrib.layers.batch_norm(h1,center=True, scale=True,is_training=phase,scope='bn')
+        # h2 = tf.contrib.layers.batch_norm(h1, center=True, scale=True, is_training=phase, scope='bn')
+        # h2 = tf.contrib.layers.batch_norm(h1,center=True, scale=True,is_training=phase,scope='bn')
+        h2 = tf.layers.batch_normalization(h1, training=phase)
         return tf.nn.relu(h2, 'relu')
-
-
 
 
 def dense_batch_model():
@@ -79,38 +77,16 @@ def dense_batch_model():
     h2 = dense_batch_relu(h1, phase, 'layer2')
     logits = dense(h2, 10, 'logits')
 
-    # show_graph(tf.get_default_graph().as_graph_def())
-
-    history_bn = train(logits, y, phase)
+    history_bn = train(logits, y)
     return history_bn
 
 
-def dense_relu_batch(x, phase, scope):
-    with tf.variable_scope(scope):
-        h1 = dense_relu(x, 100, scope='dense_relu')
-        bn = tf.contrib.layers.batch_norm(h1,center=True, scale=True,is_training=phase,scope='bn')
-        return bn
-
-
-def dense_relu_batch_model():
-    tf.reset_default_graph()
-    x = tf.placeholder('float32', (None, 784), name='x')
-    y = tf.placeholder('float32', (None, 10), name='y')
-    phase = tf.placeholder(tf.bool, name='phase')
-
-    h1 = dense_relu_batch(x, phase,'layer1')
-    h2 = dense_relu_batch(h1, phase, 'layer2')
-    logits = dense(h2, 10, 'logits')
-
-    history_post_bn = train(logits, y, phase)
-    return history_post_bn
-
 history = np.array(normal_model())
 history_bn = np.array(dense_batch_model())
-history_post_bn = np.array(dense_relu_batch_model())
-
+plt.title('test accuracy')
 plt.plot(history[:, 0], history[:, -1], label='t_acc')
 plt.plot(history_bn[:, 0], history_bn[:, -1], label='t_acc_bn')
-plt.plot(history_post_bn[:, 0], history_post_bn[:, -1], label='t_acc_post_bn')
 plt.legend()
 plt.show()
+
+
