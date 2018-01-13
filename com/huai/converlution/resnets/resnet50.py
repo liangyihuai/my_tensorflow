@@ -29,12 +29,16 @@ def identity_block(X, kernel_size, filters, stage, block):
         X_shortcut = X
 
         # First component of main path
-        conv1 = tf.layers.conv2d(X, filter1, kernel_size=(1, 1), strides=(1, 1),name=conv_name_base+'2a')
+        conv1 = tf.layers.conv2d(X, filter1,
+                 kernel_size=(1, 1), strides=(1, 1),
+                                 name=conv_name_base+'2a')
         # batch_norm1 = tf.layers.batch_normalization(conv1, axis=3, name=bn_name_base+'2a', training=TRAINING)
         activate1 = tf.nn.relu(conv1)
 
         # Second component of main path
-        conv2 = tf.layers.conv2d(activate1, filter2, (kernel_size, kernel_size), padding='same',
+        conv2 = tf.layers.conv2d(activate1, filter2,
+                                 (kernel_size, kernel_size),
+                                 padding='same',
                              name=conv_name_base+'2b')
         # batch_norm2 = tf.layers.batch_normalization(conv2, axis=3, name=bn_name_base+'2b', training=TRAINING)
         activate2 = tf.nn.relu(conv2)
@@ -80,7 +84,9 @@ def convolutional_block(X, kernel_size, filters, stage, block, stride = 2):
         X_shortcut = X
 
         # First component of main path
-        conv1 = tf.layers.conv2d(X, filter1, kernel_size=(1, 1), strides=(stride, stride),
+        conv1 = tf.layers.conv2d(X, filter1,
+                                 kernel_size=(1, 1),
+                                 strides=(stride, stride),
                                  name=conv_name_base+'2a')
         # batch_norm1 = tf.layers.batch_normalization(conv1, axis=3, name=bn_name_base+'2a', training=TRAINING)
         activate1 = tf.nn.relu(conv1)
@@ -92,12 +98,16 @@ def convolutional_block(X, kernel_size, filters, stage, block, stride = 2):
         activate2 = tf.nn.relu(conv2)
 
         # Third component of main path
-        conv3 = tf.layers.conv2d(activate2, filter3, (1, 1),
+        conv3 = tf.layers.conv2d(activate2, filter3,
+                                 (1, 1),
                              name=conv_name_base + '2c')
         # batch_norm3 = tf.layers.batch_normalization(conv3, axis=3, name=bn_name_base + '2c', training=TRAINING)
 
         # SHORTCUT PATH
-        X_shortcut = tf.layers.conv2d(X_shortcut, filter3, (1,1), strides=(stride, stride), name=conv_name_base + '1')
+        X_shortcut = tf.layers.conv2d(
+            X_shortcut, filter3, (1,1),
+            strides=(stride, stride),
+            name=conv_name_base + '1')
         # X_shortcut = tf.layers.batch_normalization(X_shortcut, axis=3, name=bn_name_base + '1', training=TRAINING)
 
         # Final step: Add shortcut value to main path, and pass it through a RELU activation
@@ -127,13 +137,15 @@ def ResNet50_reference(X, classes= 6):
     conv_stage1 = tf.layers.conv2d(X_padding, filters=64, kernel_size=(7, 7), strides=(2, 2), name='conv1')
     # batch_norm1_stage1 = tf.layers.batch_normalization(conv_stage1, axis=3, name='bn_conv1')
     activate_stage1 = tf.nn.relu(conv_stage1)
-    pool_stage1 = tf.layers.max_pooling2d(activate_stage1, pool_size=(3, 3), strides=(2, 2))
+    pool_stage1 = tf.layers.max_pooling2d(
+        activate_stage1, pool_size=(3, 3),
+                strides=(2, 2))
     assert(pool_stage1.shape == (pool_stage1.shape[0], 15, 15, 64))
 
     # stage 2
     conv_block_stage2 = convolutional_block(pool_stage1, kernel_size=3, filters=[64, 64, 256], stage=2, block='a', stride=1)
-    ide_block_stage2_1 = identity_block(conv_block_stage2, 3, [4, 64, 256], stage=2, block='b')
-    ide_block_stage2_2 = identity_block(ide_block_stage2_1, 3, [4, 64, 256], stage=2, block='c')
+    ide_block_stage2_1 = identity_block(conv_block_stage2, 3, [64, 64, 256], stage=2, block='b')
+    ide_block_stage2_2 = identity_block(ide_block_stage2_1, 3, [64, 64, 256], stage=2, block='c')
 
     # stage 3
     conv_block_stage3 = convolutional_block(ide_block_stage2_2, kernel_size=3, filters=[128,128,512],
@@ -151,11 +163,14 @@ def ResNet50_reference(X, classes= 6):
     ide_block_stage4_5 = identity_block(ide_block_stage4_4, 3, [256, 256, 1024], stage=4, block='f')
 
     # stage 5
-    conv_block_stage5 = convolutional_block(ide_block_stage4_5, kernel_size=3, filters=[512, 512, 2048], stage=5, block='a', stride=2)
+    conv_block_stage5 = convolutional_block(ide_block_stage4_5,
+                    kernel_size=3,
+                     filters=[512, 512, 2048], stage=5, block='a', stride=2)
     ide_block_stage5_1 = identity_block(conv_block_stage5, 3, [512, 512, 2048], stage=5, block='b')
     ide_block_stage5_2 = identity_block(ide_block_stage5_1, 3, [512, 512, 2048], stage=5, block='c')
 
-    ave_pool1 = tf.layers.average_pooling2d(ide_block_stage5_2, pool_size=(2, 2), strides=(1,1))
+    ave_pool1 = tf.layers.average_pooling2d(
+        ide_block_stage5_2, pool_size=(2, 2), strides=(1,1))
 
     flatten = tf.layers.flatten(ave_pool1, name='flatten')
     dense1 = tf.layers.dense(flatten, units=50, activation=tf.nn.relu)
