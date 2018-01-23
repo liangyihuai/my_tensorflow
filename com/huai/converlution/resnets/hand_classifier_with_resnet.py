@@ -29,6 +29,7 @@ class hand_classifier(object):
         filters -- python list of integers, defining the number of filters in the CONV layers of the main path
         stage -- integer, used to name the layers, depending on their position in the network
         block -- string/character, used to name the layers, depending on their position in the network
+        training -- train or test
 
         Returns:
         X -- output of the identity block, tensor of shape (n_H, n_W, n_C)
@@ -76,6 +77,7 @@ class hand_classifier(object):
         filters -- python list of integers, defining the number of filters in the CONV layers of the main path
         stage -- integer, used to name the layers, depending on their position in the network
         block -- string/character, used to name the layers, depending on their position in the network
+        training -- train or test
         stride -- Integer, specifying the stride to be used
 
         Returns:
@@ -309,7 +311,7 @@ class hand_classifier(object):
         saver = tf.train.Saver()
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
-            for i in range(2000):
+            for i in range(800):
                 X_mini_batch, Y_mini_batch = mini_batches[np.random.randint(0, len(mini_batches))]
                 train_step.run(feed_dict={features: X_mini_batch, labels: Y_mini_batch, keep_prob: 0.5, train_mode: True})
 
@@ -345,7 +347,7 @@ def main(_):
 
 
     model = hand_classifier()
-    model.train(X_train, Y_train)
+    # model.train(X_train, Y_train)
     model.evaluate(X_test, Y_test)
     model.evaluate(X_train, Y_train, 'training data')
 

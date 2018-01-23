@@ -190,7 +190,7 @@ def main():
 
     logits = ResNet50_reference(X)
 
-    loss = tf.losses.softmax_cross_entropy(onehot_labels=Y, logits=logits)
+    loss = tf.reduce_mean(tf.losses.softmax_cross_entropy(onehot_labels=Y, logits=logits))
 
     optimizer = tf.train.GradientDescentOptimizer(0.001)
     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)

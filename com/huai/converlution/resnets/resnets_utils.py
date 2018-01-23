@@ -41,7 +41,7 @@ def process_orig_datasets(datasets):
     return X_train, Y_train, X_test, Y_test
 
 
-def random_mini_batches(X, Y, mini_batch_size=64, seed=0):
+def random_mini_batches(X, Y, mini_batch_size=64, seed=None):
     """
     Creates a list of random minibatches from (X, Y)
 
