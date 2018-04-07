@@ -1,3 +1,4 @@
+# coding=utf8
 """Utilities for parsing PTB text files."""
 from __future__ import absolute_import
 from __future__ import division
@@ -21,6 +22,19 @@ def _read_words(filename):
 
 
 def _build_vocab(filename):
+    """
+    >>>a = [1,2,3]
+    >>> b = [4,5,6]
+    >>> c = [4,5,6,7,8]
+    >>> zipped = zip(a,b)     # 打包为元组的列表
+    [(1, 4), (2, 5), (3, 6)]
+    >>> zip(a,c)              # 元素个数与最短的列表一致
+    [(1, 4), (2, 5), (3, 6)]
+    >>> zip(*zipped)          # 与 zip 相反，可理解为解压，返回二维矩阵式
+    [(1, 2, 3), (4, 5, 6)]
+    :param filename:
+    :return:
+    """
     data = _read_words(filename)
 
     counter = collections.Counter(data)
@@ -33,6 +47,12 @@ def _build_vocab(filename):
 
 
 def _file_to_word_ids(filename, word_to_id):
+    """
+
+    :param filename:
+    :param word_to_id: dictionary, (word, id)
+    :return: word ids
+    """
     data = _read_words(filename)
     return [word_to_id[word] for word in data if word in word_to_id]
 
@@ -86,7 +106,8 @@ def ptb_producer(raw_data, batch_size, num_steps, name=None):
         data = tf.reshape(raw_data[0: batch_size * batch_len], [batch_size, batch_len])
 
         epoch_size = (batch_len - 1) // num_steps
-        assertion = tf.assert_positive(epoch_size, message="epoch_size == 0, decrease batch_size or num_steps")
+        assertion = tf.assert_positive(epoch_size,
+                    message="epoch_size == 0, decrease batch_size or num_steps")
 
         with tf.control_dependencies([assertion]):
             epoch_size = tf.identity(epoch_size, name="epoch_size")

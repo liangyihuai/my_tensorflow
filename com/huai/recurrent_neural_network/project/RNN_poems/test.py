@@ -1,6 +1,18 @@
-import numpy as np
-nb_classes = 6
-targets = np.array([2, 3, 4, 0]).reshape(-1)
-one_hot_targets = np.eye(nb_classes)[targets]
+import tensorflow as tf;
+import numpy as np;
 
-print(one_hot_targets)
+c = np.random.random([10, 1])
+b = tf.nn.embedding_lookup(c, [1, 3, 4])
+
+with tf.Session() as sess:
+    sess.run(tf.initialize_all_variables())
+    print(sess.run(b))
+    print(c)
+
+
+
+
+
+
+
+
